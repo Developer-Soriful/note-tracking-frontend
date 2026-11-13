@@ -50,10 +50,19 @@ class ApiClient {
   }
 
   /**
-   * Registers a listener to invoke when a 401 Unauthorized or INVALID_TOKEN is received.
+   * Registers a listener to invoke when an authenticated request is rejected with 401.
    */
   public setOnUnauthorized(handler: UnauthorizedHandler | null): void {
     this.onUnauthorizedHandler = handler;
+  }
+
+  /**
+   * Clears the unauthorized handler if it matches the currently registered instance.
+   */
+  public clearOnUnauthorized(handler: UnauthorizedHandler): void {
+    if (this.onUnauthorizedHandler === handler) {
+      this.onUnauthorizedHandler = null;
+    }
   }
 
   /**
@@ -83,7 +92,13 @@ class ApiClient {
     body?: unknown,
     options: RequestOptions = {},
   ): Promise<T> {
-    const { params, skipAuth = false, headers: customHeaders, ...fetchOptions } = options;
+    const {
+      params,
+      skipAuth = false,
+      headers: customHeaders,
+      signal,
+      ...fetchOptions
+    } = options;
     const url = this.buildUrl(endpoint, params);
 
     const headers = new Headers(customHeaders);
@@ -93,11 +108,23 @@ class ApiClient {
       headers.set("Content-Type", "application/json");
     }
 
-    // Inject Bearer token if available and not explicitly skipped
-    if (!skipAuth && !headers.has("Authorization")) {
-      const token = tokenStorage.getAccessToken();
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+    // Determine the exact Bearer token sent with this request
+    let sentBearerToken: string | null = null;
+    if (!skipAuth) {
+      if (!headers.has("Authorization")) {
+        const token = tokenStorage.getAccessToken();
+        if (token) {
+          headers.set("Authorization", `Bearer ${token}`);
+          sentBearerToken = token;
+        }
+      } else {
+        const customAuth = headers.get("Authorization");
+        const match = customAuth
+          ? /^Bearer\s+(.+)$/i.exec(customAuth.trim())
+          : null;
+        if (match?.[1]) {
+          sentBearerToken = match[1];
+        }
       }
     }
 
@@ -108,8 +135,12 @@ class ApiClient {
         method,
         headers,
         body: body !== undefined ? JSON.stringify(body) : undefined,
+        signal,
       });
     } catch (networkError) {
+      if (networkError instanceof Error && networkError.name === "AbortError") {
+        throw networkError;
+      }
       const message =
         networkError instanceof Error
           ? networkError.message
@@ -117,11 +148,24 @@ class ApiClient {
       throw new ApiClientError(message, 0, "NETWORK_ERROR");
     }
 
-    // Handle 401 Unauthorized / Token Expiry
-    if (response.status === 401) {
-      tokenStorage.clearAccessToken();
-      if (this.onUnauthorizedHandler) {
-        this.onUnauthorizedHandler();
+    // Handle 401 Unauthorized / Token Expiry ONLY when all conditions are satisfied:
+    // 1. HTTP status is 401
+    // 2. skipAuth is false
+    // 3. Request actually sent a Bearer token
+    // 4. The sent token strictly matches the current token in tokenStorage
+    if (response.status === 401 && !skipAuth && sentBearerToken !== null) {
+      const currentStoredToken = tokenStorage.getAccessToken();
+
+      if (
+        currentStoredToken !== null &&
+        currentStoredToken === sentBearerToken
+      ) {
+        tokenStorage.clearAccessToken();
+
+        // Prevent duplicate unauthorized notifications across concurrent 401 responses
+        if (this.onUnauthorizedHandler) {
+          this.onUnauthorizedHandler();
+        }
       }
     }
 
@@ -199,4 +243,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(env.apiUrl);
-

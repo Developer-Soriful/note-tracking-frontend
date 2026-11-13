@@ -13,13 +13,15 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isSessionExpired: boolean;
+  initializationError: string | null;
   login: (input: LoginInput) => Promise<AuthResponseData>;
   register: (input: RegisterInput) => Promise<AuthResponseData>;
   logout: () => void;
   clearSessionExpired: () => void;
+  clearInitializationError: () => void;
+  retryBootstrap: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
-
