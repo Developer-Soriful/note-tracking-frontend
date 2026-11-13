@@ -26,9 +26,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
-    const errorId = error && inputId ? `${inputId}-error` : undefined;
-    const helperId = helperText && inputId ? `${inputId}-helper` : undefined;
+    const generatedId = React.useId();
+    const inputId = id || generatedId;
+    const errorId = error ? `${inputId}-error` : undefined;
+    const helperId = helperText ? `${inputId}-helper` : undefined;
+    const describedBy = error ? errorId : helperText ? helperId : undefined;
 
     return (
       <div className="w-full flex flex-col gap-1.5">
@@ -52,7 +54,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={type}
             disabled={disabled}
             aria-invalid={Boolean(error)}
-            aria-describedby={errorId || helperId}
+            aria-describedby={describedBy}
             className={cn(
               "w-full h-9.5 px-3 rounded-lg border bg-surface text-sm text-foreground placeholder:text-foreground-subtle transition-colors",
               "focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent",

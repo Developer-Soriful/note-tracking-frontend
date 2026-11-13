@@ -22,10 +22,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     },
     ref,
   ) => {
-    const textareaId =
-      id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
-    const errorId = error && textareaId ? `${textareaId}-error` : undefined;
-    const helperId = helperText && textareaId ? `${textareaId}-helper` : undefined;
+    const generatedId = React.useId();
+    const textareaId = id || generatedId;
+    const errorId = error ? `${textareaId}-error` : undefined;
+    const helperId = helperText ? `${textareaId}-helper` : undefined;
+    const describedBy = error ? errorId : helperText ? helperId : undefined;
 
     return (
       <div className="w-full flex flex-col gap-1.5">
@@ -43,7 +44,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           disabled={disabled}
           aria-invalid={Boolean(error)}
-          aria-describedby={errorId || helperId}
+          aria-describedby={describedBy}
           className={cn(
             "w-full p-3 rounded-lg border bg-surface text-sm text-foreground placeholder:text-foreground-subtle transition-colors resize-y",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent",
