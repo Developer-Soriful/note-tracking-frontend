@@ -7,6 +7,7 @@ import {
   FileText,
   PenSquare,
   Users,
+  BarChart3,
   LogOut,
   Menu,
   X,
@@ -77,6 +78,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             href: "/admin/users",
             icon: Users,
             active: pathname.startsWith("/admin/users"),
+            badge: "Admin",
+          },
+          {
+            label: "Reports",
+            href: "/admin/reports",
+            icon: BarChart3,
+            active: pathname.startsWith("/admin/reports"),
             badge: "Admin",
           },
         ]

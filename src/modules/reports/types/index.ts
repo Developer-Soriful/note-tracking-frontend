@@ -1,8 +1,8 @@
 /**
- * Reports module domain and DTO types.
+ * Reports module domain and DTO types matching Express backend contracts.
  */
 
-import type { UserRole } from "../../auth/types";
+import type { UserRole } from "@/modules/auth/types";
 
 export interface GroupedUserSummary {
   id: string;
@@ -17,13 +17,22 @@ export interface InterestReportItem {
   users: GroupedUserSummary[];
 }
 
-export interface ReportsRawResponse {
-  reports: InterestReportItem[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalInterests: number;
-    totalPages: number;
-  };
+export interface ReportsPagination {
+  page: number;
+  limit: number;
+  totalInterests: number;
+  totalPages: number;
 }
 
+export interface ReportsResponse {
+  reports: InterestReportItem[];
+  pagination: ReportsPagination;
+}
+
+// Retain ReportsRawResponse for backwards compatibility
+export type ReportsRawResponse = ReportsResponse;
+
+export interface ReportsQueryParams {
+  page?: number;
+  limit?: number;
+}
