@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { isInternalSafePath } from "@/modules/auth/utils/redirect";
 import { Button } from "@/components/ui/button";
 
 export interface ProtectedRouteProps {
@@ -32,11 +33,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     // Only redirect if auth bootstrap completed, the user is unauthenticated,
     // and there is no initialization error (i.e. genuinely unauthenticated, not an offline/server failure)
     if (!isLoading && !isAuthenticated && !initializationError) {
-      // Build safe internal redirect target
+      // Build safe internal redirect target using centralized redirect security utility
       const query = searchParams?.toString();
       const target = pathname + (query ? `?${query}` : "");
-      const isSafeTarget =
-        target.startsWith("/") && !target.startsWith("//") && !target.startsWith("/login");
+      const isSafeTarget = isInternalSafePath(target);
       const redirectUrl = isSafeTarget
         ? `/login?next=${encodeURIComponent(target)}`
         : "/login";

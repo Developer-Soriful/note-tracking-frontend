@@ -189,10 +189,9 @@ export function LoginForm() {
           rightIcon={
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              tabIndex={-1}
+              onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="cursor-pointer text-foreground-subtle hover:text-foreground transition-colors p-0.5 focus:outline-none"
+              className="cursor-pointer text-foreground-subtle hover:text-foreground transition-colors p-0.5 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />

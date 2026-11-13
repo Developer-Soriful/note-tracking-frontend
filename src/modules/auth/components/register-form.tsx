@@ -278,10 +278,9 @@ export function RegisterForm() {
           rightIcon={
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              tabIndex={-1}
+              onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="cursor-pointer text-foreground-subtle hover:text-foreground transition-colors p-0.5 focus:outline-none"
+              className="cursor-pointer text-foreground-subtle hover:text-foreground transition-colors p-0.5 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />
@@ -313,14 +312,13 @@ export function RegisterForm() {
           rightIcon={
             <button
               type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              tabIndex={-1}
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
               aria-label={
                 showConfirmPassword
                   ? "Hide confirm password"
                   : "Show confirm password"
               }
-              className="cursor-pointer text-foreground-subtle hover:text-foreground transition-colors p-0.5 focus:outline-none"
+              className="cursor-pointer text-foreground-subtle hover:text-foreground transition-colors p-0.5 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {showConfirmPassword ? (
                 <EyeOff className="h-4 w-4" />
