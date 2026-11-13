@@ -1,5 +1,5 @@
 /**
- * Posts module domain and DTO types.
+ * Posts module domain and DTO types matching Express backend contracts.
  */
 
 export interface PublicPost {
@@ -16,17 +16,26 @@ export interface CreatePostInput {
   content: string;
 }
 
-export interface UserPostsRawResponse {
+export interface PostsPagination {
+  page: number;
+  limit: number;
+  totalPosts: number;
+  totalPages: number;
+}
+
+export interface UserPostsResponse {
   user: {
     id: string;
     name: string;
   };
   posts: PublicPost[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalPosts: number;
-    totalPages: number;
-  };
+  pagination: PostsPagination;
 }
 
+// Retain UserPostsRawResponse for backwards compatibility
+export type UserPostsRawResponse = UserPostsResponse;
+
+export interface PostsQueryParams {
+  page?: number;
+  limit?: number;
+}

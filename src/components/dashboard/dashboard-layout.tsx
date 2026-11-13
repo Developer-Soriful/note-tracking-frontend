@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   FileText,
+  PenSquare,
   Users,
   LogOut,
   Menu,
@@ -62,6 +63,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       href: "/notes",
       icon: FileText,
       active: pathname.startsWith("/notes"),
+    },
+    {
+      label: "Posts",
+      href: "/posts",
+      icon: PenSquare,
+      active: pathname.startsWith("/posts"),
     },
     ...(isAdmin
       ? [
