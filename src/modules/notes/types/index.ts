@@ -21,13 +21,19 @@ export interface UpdateNoteInput {
   content?: string;
 }
 
-export interface NotesListRawResponse {
-  notes: PublicNote[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalNotes: number;
-    totalPages: number;
-  };
+export interface NotesPagination {
+  page: number;
+  limit: number;
+  totalNotes: number;
+  totalPages: number;
 }
 
+export interface NotesListResponse {
+  notes: PublicNote[];
+  pagination: NotesPagination;
+}
+
+export interface NotesQueryParams {
+  page?: number;
+  limit?: number;
+}
