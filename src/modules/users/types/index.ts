@@ -1,8 +1,10 @@
 /**
- * Users module domain and DTO types.
+ * Users module domain and DTO types matching Express backend contracts.
  */
 
-import type { PublicUser, UserRole } from "../../auth/types";
+import type { PublicUser, UserRole } from "@/modules/auth/types";
+
+export type { PublicUser, UserRole };
 
 export interface CreateUserInput {
   name: string;
@@ -19,13 +21,19 @@ export interface UpdateUserInput {
   interests?: string[];
 }
 
-export interface UsersListRawResponse {
-  users: PublicUser[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalUsers: number;
-    totalPages: number;
-  };
+export interface UsersPagination {
+  page: number;
+  limit: number;
+  totalUsers: number;
+  totalPages: number;
 }
 
+export interface UsersListResponse {
+  users: PublicUser[];
+  pagination: UsersPagination;
+}
+
+export interface UsersQueryParams {
+  page?: number;
+  limit?: number;
+}
