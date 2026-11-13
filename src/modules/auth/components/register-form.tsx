@@ -14,7 +14,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
-import { getSafeRedirectUrl } from "../utils/redirect";
+import { getRoleAwareRedirectUrl } from "../utils/redirect";
 import { ApiClientError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ interface FieldErrors {
 export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { register, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { register, isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -45,16 +45,20 @@ export function RegisterForm() {
   const [, startTransition] = useTransition();
 
   const nextParam = searchParams.get("next");
-  const targetDestination = getSafeRedirectUrl(nextParam, "/notes");
 
-  // Redirect authenticated users away immediately
+  // Redirect authenticated users away immediately to a role-appropriate destination
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
+      const destination = getRoleAwareRedirectUrl(
+        nextParam,
+        user?.role,
+        "/notes",
+      );
       startTransition(() => {
-        router.replace(targetDestination);
+        router.replace(destination);
       });
     }
-  }, [isAuthLoading, isAuthenticated, router, targetDestination]);
+  }, [isAuthLoading, isAuthenticated, user?.role, nextParam, router]);
 
   const validateForm = (): boolean => {
     const errors: FieldErrors = {};
@@ -136,16 +140,22 @@ export function RegisterForm() {
       : undefined;
 
     try {
-      await register({
+      const authResponse = await register({
         name: name.trim(),
         email: email.trim().toLowerCase(),
         password,
         interests: parsedInterests,
       });
 
-      // Navigate to destination on success
+      // New accounts are always regular users; route safely to workspace
+      const destination = getRoleAwareRedirectUrl(
+        nextParam,
+        authResponse.user.role,
+        "/notes",
+      );
+
       startTransition(() => {
-        router.replace(targetDestination);
+        router.replace(destination);
       });
     } catch (err) {
       if (err instanceof ApiClientError) {

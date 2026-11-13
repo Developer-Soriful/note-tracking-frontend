@@ -33,18 +33,6 @@ export const usersService = {
   },
 
   /**
-   * Retrieves an individual user's profile.
-   */
-  async getUserById(
-    userId: string,
-    options: { signal?: AbortSignal } = {},
-  ): Promise<PublicUser> {
-    return apiClient.get<PublicUser>(API_ENDPOINTS.USERS.BY_ID(userId), {
-      signal: options.signal,
-    });
-  },
-
-  /**
    * Creates a new user account. Admin-only.
    */
   async createUser(input: CreateUserInput): Promise<PublicUser> {

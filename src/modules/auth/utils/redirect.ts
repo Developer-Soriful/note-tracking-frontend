@@ -1,7 +1,9 @@
+import type { UserRole } from "../types";
+
 /**
  * Default safe destination for authenticated sessions.
  */
-const DEFAULT_SAFE_DESTINATION = "/notes";
+export const DEFAULT_SAFE_DESTINATION = "/notes";
 
 /**
  * Validates whether a given URL path is a safe, relative, internal application path.
@@ -43,6 +45,26 @@ export function isInternalSafePath(path: string): boolean {
 }
 
 /**
+ * Checks whether a given path is an administrative destination restricted to admin users.
+ * Matches /admin, /admin/, and any nested administrative routes.
+ */
+export function isAdminPath(path: string): boolean {
+  if (!path || typeof path !== "string") {
+    return false;
+  }
+
+  try {
+    const dummyOrigin = "https://local.app";
+    const parsed = new URL(path.startsWith("/") ? path : `/${path}`, dummyOrigin);
+    const pathname = parsed.pathname.toLowerCase();
+
+    return pathname === "/admin" || pathname.startsWith("/admin/");
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Sanitizes and validates internal redirect target paths.
  * Prevents open redirects, protocol-relative attacks, backslash path normalization exploits,
  * external destinations, and authentication redirect loops.
@@ -76,3 +98,32 @@ export function getSafeRedirectUrl(
     return sanitizedFallback;
   }
 }
+
+/**
+ * Resolves a safe redirect destination tailored to the user's role and authorization.
+ *
+ * - Sanitizes the target path against open redirects, backslash normalization, and auth loops.
+ * - Enforces role-based path safety: If the destination is an administrative path (e.g. /admin/*)
+ *   and the authenticated user does not have the "admin" role (or role is unknown/user),
+ *   it gracefully falls back to the safe user workspace (/notes).
+ * - Preserves legitimate admin destinations when an administrator authenticates.
+ */
+export function getRoleAwareRedirectUrl(
+  target: string | null | undefined,
+  userRole?: UserRole | null,
+  fallback = DEFAULT_SAFE_DESTINATION,
+): string {
+  const safeFallback =
+    isAdminPath(fallback) && userRole !== "admin"
+      ? DEFAULT_SAFE_DESTINATION
+      : fallback;
+
+  const safeUrl = getSafeRedirectUrl(target, safeFallback);
+
+  if (isAdminPath(safeUrl) && userRole !== "admin") {
+    return safeFallback;
+  }
+
+  return safeUrl;
+}
+

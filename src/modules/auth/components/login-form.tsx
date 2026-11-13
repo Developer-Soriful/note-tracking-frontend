@@ -5,7 +5,7 @@ import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, AlertCircle, ArrowRight, Mail, Lock } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
-import { getSafeRedirectUrl } from "../utils/redirect";
+import { getRoleAwareRedirectUrl } from "../utils/redirect";
 import { ApiClientError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ interface FieldErrors {
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { login, isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,16 +29,20 @@ export function LoginForm() {
   const [, startTransition] = useTransition();
 
   const nextParam = searchParams.get("next");
-  const targetDestination = getSafeRedirectUrl(nextParam, "/notes");
 
-  // Redirect authenticated visitors away immediately
+  // Redirect authenticated visitors away immediately to a role-appropriate destination
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
+      const destination = getRoleAwareRedirectUrl(
+        nextParam,
+        user?.role,
+        "/notes",
+      );
       startTransition(() => {
-        router.replace(targetDestination);
+        router.replace(destination);
       });
     }
-  }, [isAuthLoading, isAuthenticated, router, targetDestination]);
+  }, [isAuthLoading, isAuthenticated, user?.role, nextParam, router]);
 
   const validateForm = (): boolean => {
     const errors: FieldErrors = {};
@@ -73,14 +77,20 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      await login({
+      const authResponse = await login({
         email: email.trim().toLowerCase(),
         password,
       });
 
-      // Navigate to destination on success
+      // Navigate to destination on success, preventing non-admins from entering admin routes
+      const destination = getRoleAwareRedirectUrl(
+        nextParam,
+        authResponse.user.role,
+        "/notes",
+      );
+
       startTransition(() => {
-        router.replace(targetDestination);
+        router.replace(destination);
       });
     } catch (err) {
       if (err instanceof ApiClientError) {
