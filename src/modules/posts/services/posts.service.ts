@@ -1,6 +1,7 @@
 import { apiClient, type RequestOptions } from "@/lib/api/client";
 import { API_ENDPOINTS } from "@/lib/api/endpoints";
 import type {
+  AllPostsResponse,
   CreatePostInput,
   PostsQueryParams,
   PublicPost,
@@ -12,10 +13,31 @@ export interface GetPostsByUserOptions {
   signal?: AbortSignal;
 }
 
+export interface GetAllPostsOptions {
+  params?: PostsQueryParams;
+  signal?: AbortSignal;
+}
+
 /**
  * Service responsible for all Posts API operations.
  */
 export const postsService = {
+  /**
+   * Retrieves a paginated list of all public posts across all users.
+   */
+  async getAllPosts(
+    options: GetAllPostsOptions = {},
+  ): Promise<AllPostsResponse> {
+    const { params, signal } = options;
+    return apiClient.get<AllPostsResponse>(API_ENDPOINTS.POSTS.LIST, {
+      params: {
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 10,
+      },
+      signal,
+    });
+  },
+
   /**
    * Retrieves a paginated list of posts published by a specific user.
    */

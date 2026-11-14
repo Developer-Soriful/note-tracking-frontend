@@ -17,6 +17,11 @@ export default function Home() {
         </div>
 
         <nav className="flex items-center gap-3">
+          <Link href="/posts">
+            <Button variant="ghost" size="sm">
+              Public Posts
+            </Button>
+          </Link>
           <Link href="/login">
             <Button variant="ghost" size="sm">
               Sign in
@@ -45,19 +50,19 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-          <Link href="/notes" className="w-full sm:w-auto">
+          <Link href="/posts" className="w-full sm:w-auto">
             <Button
               variant="primary"
               size="lg"
               className="w-full"
               rightIcon={<ArrowRight className="h-4 w-4" />}
             >
-              Open workspace
+              Explore Public Posts
             </Button>
           </Link>
-          <Link href="/login" className="w-full sm:w-auto">
+          <Link href="/notes" className="w-full sm:w-auto">
             <Button variant="outline" size="lg" className="w-full">
-              Sign in to account
+              My Notes
             </Button>
           </Link>
         </div>

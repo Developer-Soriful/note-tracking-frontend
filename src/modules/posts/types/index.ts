@@ -5,6 +5,7 @@
 export interface PublicPost {
   id: string;
   userId: string;
+  authorName?: string;
   title: string;
   content: string;
   createdAt: string;
@@ -28,6 +29,11 @@ export interface UserPostsResponse {
     id: string;
     name: string;
   };
+  posts: PublicPost[];
+  pagination: PostsPagination;
+}
+
+export interface AllPostsResponse {
   posts: PublicPost[];
   pagination: PostsPagination;
 }

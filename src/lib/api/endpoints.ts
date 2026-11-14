@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     BY_ID: (noteId: string) => `/notes/${noteId}`,
   },
   POSTS: {
+    LIST: "/posts",
     CREATE: "/posts",
     BY_USER: (userId: string) => `/posts/user/${userId}`,
   },

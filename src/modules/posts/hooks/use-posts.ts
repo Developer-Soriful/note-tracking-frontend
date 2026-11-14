@@ -14,6 +14,7 @@ export interface UsePostsOptions {
   initialPage?: number;
   limit?: number;
   autoFetch?: boolean;
+  initialUserId?: string | null;
 }
 
 const DEFAULT_PAGINATION: PostsPagination = {
@@ -24,11 +25,17 @@ const DEFAULT_PAGINATION: PostsPagination = {
 };
 
 export function usePosts(options: UsePostsOptions = {}) {
-  const { initialPage = 1, limit = 10, autoFetch = true } = options;
+  const {
+    initialPage = 1,
+    limit = 10,
+    autoFetch = true,
+    initialUserId = null,
+  } = options;
   const { user } = useAuth();
-  const userId = user?.id;
 
   const [posts, setPosts] = useState<PublicPost[]>([]);
+  const [filterUserId, setFilterUserId] = useState<string | null>(initialUserId);
+  const [activeAuthorName, setActiveAuthorName] = useState<string | null>(null);
   const [pagination, setPagination] =
     useState<PostsPagination>(DEFAULT_PAGINATION);
   const [page, setPage] = useState<number>(initialPage);
@@ -40,32 +47,43 @@ export function usePosts(options: UsePostsOptions = {}) {
   // Prevents stale asynchronous responses from overwriting newer state
   const fetchSequenceRef = useRef<number>(0);
 
-  // Synchronize posts data with current user, page, limit, and reloadTrigger
+  // Synchronize posts data with filterUserId, page, limit, and reloadTrigger
   useEffect(() => {
     if (!autoFetch) return;
 
     let isMounted = true;
     const controller = new AbortController();
     const currentSequence = ++fetchSequenceRef.current;
+    setIsLoading(true);
 
     async function loadPosts() {
-      if (!userId) {
-        if (isMounted && currentSequence === fetchSequenceRef.current) {
-          setIsLoading(false);
-        }
-        return;
-      }
-
       try {
-        const response = await postsService.getPostsByUser(userId, {
-          params: { page, limit },
-          signal: controller.signal,
-        });
+        if (filterUserId && filterUserId.trim().length > 0) {
+          // Scenario 2: $lookup aggregation by specific user ID
+          const response = await postsService.getPostsByUser(filterUserId.trim(), {
+            params: { page, limit },
+            signal: controller.signal,
+          });
 
-        if (isMounted && currentSequence === fetchSequenceRef.current) {
-          setPosts(response.posts);
-          setPagination(response.pagination);
-          setError(null);
+          if (isMounted && currentSequence === fetchSequenceRef.current) {
+            setPosts(response.posts);
+            setActiveAuthorName(response.user.name);
+            setPagination(response.pagination);
+            setError(null);
+          }
+        } else {
+          // Public global feed of all posts across all users
+          const response = await postsService.getAllPosts({
+            params: { page, limit },
+            signal: controller.signal,
+          });
+
+          if (isMounted && currentSequence === fetchSequenceRef.current) {
+            setPosts(response.posts);
+            setActiveAuthorName(null);
+            setPagination(response.pagination);
+            setError(null);
+          }
         }
       } catch (err) {
         if (!isMounted || (err instanceof Error && err.name === "AbortError")) {
@@ -94,7 +112,7 @@ export function usePosts(options: UsePostsOptions = {}) {
       isMounted = false;
       controller.abort();
     };
-  }, [userId, page, limit, autoFetch, reloadTrigger]);
+  }, [filterUserId, page, limit, autoFetch, reloadTrigger]);
 
   /**
    * Refetches the current page with a loading indicator.
@@ -153,6 +171,9 @@ export function usePosts(options: UsePostsOptions = {}) {
     error,
     searchQuery,
     setSearchQuery,
+    filterUserId,
+    setFilterUserId,
+    activeAuthorName,
     isClientFiltered: searchQuery.trim().length > 0,
     changePage,
     refetch,

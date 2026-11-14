@@ -162,40 +162,57 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* User Profile & Session Controls */}
       <div className="pt-4 border-t border-border-subtle space-y-3">
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-8 w-8 rounded-full bg-surface-muted border border-border flex items-center justify-center text-xs font-semibold text-foreground shrink-0 select-none">
-              {userInitials}
-            </div>
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-foreground truncate">
-                  {user?.name || "Member"}
-                </span>
-                {isAdmin && (
-                  <Badge variant="admin" className="text-[9px] py-0 px-1">
-                    Admin
-                  </Badge>
-                )}
+        {user ? (
+          <>
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-8 w-8 rounded-full bg-surface-muted border border-border flex items-center justify-center text-xs font-semibold text-foreground shrink-0 select-none">
+                  {userInitials}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-medium text-foreground truncate">
+                      {user.name}
+                    </span>
+                    {isAdmin && (
+                      <Badge variant="admin" className="text-[9px] py-0 px-1">
+                        Admin
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-foreground-subtle truncate">
+                    {user.email}
+                  </span>
+                </div>
               </div>
-              <span className="text-[11px] text-foreground-subtle truncate">
-                {user?.email || ""}
-              </span>
             </div>
-          </div>
-        </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          isLoading={isLoggingOut}
-          className="w-full justify-start text-xs text-foreground-muted hover:text-danger hover:bg-danger-surface transition-colors"
-          leftIcon={!isLoggingOut && <LogOut className="h-3.5 w-3.5" />}
-        >
-          {isLoggingOut ? "Signing out..." : "Sign out"}
-        </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              isLoading={isLoggingOut}
+              className="w-full justify-start text-xs text-foreground-muted hover:text-danger hover:bg-danger-surface transition-colors"
+              leftIcon={!isLoggingOut && <LogOut className="h-3.5 w-3.5" />}
+            >
+              {isLoggingOut ? "Signing out..." : "Sign out"}
+            </Button>
+          </>
+        ) : (
+          <div className="px-2 space-y-2">
+            <Link href="/login" className="block w-full">
+              <Button variant="primary" size="sm" className="w-full text-xs">
+                Sign in
+              </Button>
+            </Link>
+            <Link href="/register" className="block w-full">
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                Register
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

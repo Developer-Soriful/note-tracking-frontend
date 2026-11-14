@@ -5,11 +5,10 @@ import { PostsWorkspace } from "@/modules/posts/components/posts-workspace";
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "Posts — Feed",
-  description: "View and publish articles and updates.",
+  title: "Public Posts — Feed",
+  description: "Browse articles, updates, and community posts.",
 };
 
 export default function PostsPage() {
   return <PostsWorkspace />;
 }
-
