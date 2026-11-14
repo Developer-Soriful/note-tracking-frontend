@@ -32,6 +32,7 @@ export const notesService = {
       params: {
         page: params?.page ?? 1,
         limit: params?.limit ?? 10,
+        ...(params?.mine !== undefined ? { mine: params.mine } : {}),
       },
       signal,
     });

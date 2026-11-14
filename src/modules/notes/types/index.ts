@@ -36,4 +36,5 @@ export interface NotesListResponse {
 export interface NotesQueryParams {
   page?: number;
   limit?: number;
+  mine?: boolean;
 }
